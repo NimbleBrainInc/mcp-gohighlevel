@@ -23,7 +23,12 @@
       "args": ["-m", "mcp_gohighlevel.server"],
       "env": {
         "GOHIGHLEVEL_API_KEY": "${user_config.api_key}"
-      },
+      }
+    }
+  },
+  "_meta": {
+    "org.mpaktrust": {
+      "mtf_version": "0.1",
       "permissions": {
         "filesystem": "none",
         "network": "outbound",
