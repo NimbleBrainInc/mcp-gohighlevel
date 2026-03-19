@@ -1,7 +1,4 @@
-"""Async HTTP client for Example API.
-
-Replace this with your actual API client implementation.
-"""
+"""Async HTTP client for GoHighLevel API."""
 
 import os
 from typing import Any
@@ -10,33 +7,33 @@ import aiohttp
 from aiohttp import ClientError
 
 
-class ExampleAPIError(Exception):
-    """Exception raised for Example API errors."""
+class GoHighLevelAPIError(Exception):
+    """Exception raised for GoHighLevel API errors."""
 
     def __init__(self, status: int, message: str, details: dict[str, Any] | None = None) -> None:
         self.status = status
         self.message = message
         self.details = details
-        super().__init__(f"Example API Error {status}: {message}")
+        super().__init__(f"GoHighLevel API Error {status}: {message}")
 
 
-class ExampleClient:
-    """Async client for Example API."""
+class GoHighLevelClient:
+    """Async client for GoHighLevel API."""
 
-    BASE_URL = "https://api.example.com/v1"
+    BASE_URL = "https://services.leadconnectorhq.com"
 
     def __init__(
         self,
         api_key: str | None = None,
         timeout: float = 30.0,
     ) -> None:
-        self.api_key = api_key or os.environ.get("EXAMPLE_API_KEY")
+        self.api_key = api_key or os.environ.get("GOHIGHLEVEL_API_KEY")
         if not self.api_key:
-            raise ValueError("EXAMPLE_API_KEY is required")
+            raise ValueError("GOHIGHLEVEL_API_KEY is required")
         self.timeout = timeout
         self._session: aiohttp.ClientSession | None = None
 
-    async def __aenter__(self) -> "ExampleClient":
+    async def __aenter__(self) -> "GoHighLevelClient":
         await self._ensure_session()
         return self
 
@@ -46,10 +43,11 @@ class ExampleClient:
     async def _ensure_session(self) -> None:
         if not self._session:
             headers = {
-                "User-Agent": "mcp-server-example/0.1.0",
+                "User-Agent": "mcp-server-gohighlevel/0.1.0",
                 "Accept": "application/json",
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self.api_key}",
+                "Version": "2021-07-28",
             }
             self._session = aiohttp.ClientSession(
                 headers=headers, timeout=aiohttp.ClientTimeout(total=self.timeout)
@@ -68,7 +66,7 @@ class ExampleClient:
         params: dict[str, Any] | None = None,
         json_data: Any | None = None,
     ) -> dict[str, Any]:
-        """Make an HTTP request to the Example API."""
+        """Make an HTTP request to the GoHighLevel API."""
         await self._ensure_session()
         url = f"{self.BASE_URL}{path}"
 
@@ -100,22 +98,55 @@ class ExampleClient:
                         elif "message" in result:
                             error_msg = result["message"]
 
-                    raise ExampleAPIError(response.status, error_msg, result)
+                    raise GoHighLevelAPIError(response.status, error_msg, result)
 
                 return result
 
         except ClientError as e:
-            raise ExampleAPIError(500, f"Network error: {str(e)}") from e
+            raise GoHighLevelAPIError(500, f"Network error: {str(e)}") from e
 
     # ========================================================================
-    # API Methods - Replace with your actual API methods
+    # Contacts API
     # ========================================================================
 
-    async def list_items(self, limit: int = 20) -> list[dict[str, Any]]:
-        """List items from the API."""
-        data = await self._request("GET", "/items", params={"limit": limit})
-        return data.get("items", [])
+    async def get_contact(self, contact_id: str) -> dict[str, Any]:
+        """Get a single contact by ID."""
+        return await self._request("GET", f"/contacts/{contact_id}")
 
-    async def get_item(self, item_id: str) -> dict[str, Any]:
-        """Get a single item by ID."""
-        return await self._request("GET", f"/items/{item_id}")
+    async def create_contact(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Create a new contact."""
+        return await self._request("POST", "/contacts/", json_data=data)
+
+    async def update_contact(self, contact_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        """Update an existing contact."""
+        return await self._request("PUT", f"/contacts/{contact_id}", json_data=data)
+
+    async def delete_contact(self, contact_id: str) -> dict[str, Any]:
+        """Delete a contact."""
+        return await self._request("DELETE", f"/contacts/{contact_id}")
+
+    async def upsert_contact(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Create or update a contact based on duplicate settings."""
+        return await self._request("POST", "/contacts/upsert", json_data=data)
+
+    async def list_contacts(
+        self,
+        location_id: str,
+        query: str | None = None,
+        limit: int = 20,
+        start_after_id: str | None = None,
+        start_after: int | None = None,
+    ) -> dict[str, Any]:
+        """List contacts for a location (deprecated — prefer search_contacts)."""
+        params: dict[str, Any] = {"locationId": location_id, "limit": limit}
+        if query:
+            params["query"] = query
+        if start_after_id:
+            params["startAfterId"] = start_after_id
+        if start_after is not None:
+            params["startAfter"] = start_after
+        return await self._request("GET", "/contacts/", params=params)
+
+    async def search_contacts(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Search contacts with advanced filters."""
+        return await self._request("POST", "/contacts/search", json_data=data)

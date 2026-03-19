@@ -1,10 +1,12 @@
-# Example MCP Server
+# GoHighLevel MCP Server
 
-An MCP (Model Context Protocol) server that provides access to the Example API, allowing AI assistants to interact with Example data.
+An MCP (Model Context Protocol) server for managing contacts in GoHighLevel CRM. Supports full CRUD, upsert, list, and search operations.
 
 ## Features
 
-- List and retrieve items from the Example API
+- Get, create, update, delete contacts
+- Upsert contacts with duplicate detection
+- List and search contacts with filters
 - Async HTTP client with error handling
 - Typed responses with Pydantic models
 
@@ -14,36 +16,34 @@ An MCP (Model Context Protocol) server that provides access to the Example API, 
 
 ```bash
 # Configure your API key
-mpak config set @nimblebraininc/example api_key=your_api_key_here
+mpak config set @nimblebraininc/gohighlevel api_key=your_api_key_here
 
 # Run the server
-mpak run @nimblebraininc/example
+mpak run @nimblebraininc/gohighlevel
 ```
 
 ### Manual Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/NimbleBrainInc/mcp-example.git
-cd mcp-example
+git clone https://github.com/NimbleBrainInc/mcp-gohighlevel.git
+cd mcp-gohighlevel
 
 # Install dependencies with uv
 uv sync
 
 # Set your API key
-export EXAMPLE_API_KEY=your_api_key_here
+export GOHIGHLEVEL_API_KEY=your_api_key_here
 
 # Run the server
-uv run python -m mcp_example.server
+uv run python -m mcp_gohighlevel.server
 ```
 
 ## Configuration
 
 ### Getting Your API Key
 
-1. Go to https://example.com/settings/api
-2. Create a new API key
-3. Copy the key
+Use a **Private Integration Token** or **OAuth Access Token** from your GoHighLevel account. See the [GoHighLevel API docs](https://marketplace.gohighlevel.com/docs/Authorization/authorization_doc) for setup instructions.
 
 ### Claude Desktop Configuration
 
@@ -52,9 +52,9 @@ Add to your `~/.claude/settings.json`:
 ```json
 {
   "mcpServers": {
-    "example": {
+    "gohighlevel": {
       "command": "mpak",
-      "args": ["run", "@nimblebraininc/example"]
+      "args": ["run", "@nimblebraininc/gohighlevel"]
     }
   }
 }
@@ -64,8 +64,13 @@ Add to your `~/.claude/settings.json`:
 
 | Tool | Description |
 |------|-------------|
-| `list_items` | List items from the API with optional limit |
-| `get_item` | Get a single item by its ID |
+| `get_contact` | Get a single contact by ID |
+| `create_contact` | Create a new contact |
+| `update_contact` | Update an existing contact |
+| `delete_contact` | Delete a contact by ID |
+| `upsert_contact` | Create or update a contact based on duplicate settings |
+| `list_contacts` | List contacts for a location (deprecated) |
+| `search_contacts` | Search contacts with advanced filters |
 
 ## Development
 

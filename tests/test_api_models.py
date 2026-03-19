@@ -1,65 +1,113 @@
-"""Tests for Example API models."""
+"""Tests for GoHighLevel API models."""
 
-from mcp_example.api_models import Item, ItemListResponse, Pagination
+from mcp_gohighlevel.api_models import (
+    Contact,
+    ContactListResponse,
+    ContactResponse,
+    DeleteContactResponse,
+    DndSettings,
+    UpdateContactResponse,
+    UpsertContactResponse,
+)
 
 
-def test_item_model() -> None:
-    """Test Item model parsing from API response."""
+def test_contact_model() -> None:
+    """Test Contact model parsing from API response."""
     data = {
-        "id": "item_123",
-        "name": "Test Item",
-        "description": "A test item",
-        "createdAt": "2026-01-01T00:00:00Z",
-        "updatedAt": "2026-01-02T00:00:00Z",
-        "metadata": {"key": "value"},
+        "id": "abc123",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "phone": "+1 888-888-8888",
+        "locationId": "loc123",
+        "companyName": "Acme Inc",
+        "tags": ["VIP", "customer"],
+        "dateAdded": "2026-01-01T00:00:00Z",
     }
-    item = Item(**data)
-    assert item.id == "item_123"
-    assert item.name == "Test Item"
-    assert item.created_at == "2026-01-01T00:00:00Z"
-    assert item.metadata == {"key": "value"}
+    contact = Contact(**data)
+    assert contact.id == "abc123"
+    assert contact.first_name == "John"
+    assert contact.last_name == "Doe"
+    assert contact.email == "john@example.com"
+    assert contact.location_id == "loc123"
+    assert contact.company_name == "Acme Inc"
+    assert contact.tags == ["VIP", "customer"]
 
 
-def test_item_model_minimal() -> None:
-    """Test Item model with only required fields."""
-    item = Item(id="item_456")
-    assert item.id == "item_456"
-    assert item.name is None
-    assert item.metadata == {}
+def test_contact_model_minimal() -> None:
+    """Test Contact model with only ID."""
+    contact = Contact(id="abc123")
+    assert contact.id == "abc123"
+    assert contact.first_name is None
+    assert contact.tags is None
 
 
-def test_pagination_model() -> None:
-    """Test Pagination model."""
-    data = {"nextCursor": "abc123", "hasMore": True}
-    pagination = Pagination(**data)
-    assert pagination.next_cursor == "abc123"
-    assert pagination.has_more is True
-
-
-def test_pagination_defaults() -> None:
-    """Test Pagination model defaults."""
-    pagination = Pagination()
-    assert pagination.next_cursor is None
-    assert pagination.has_more is False
-
-
-def test_item_list_response() -> None:
-    """Test ItemListResponse model."""
+def test_dnd_settings() -> None:
+    """Test DND settings model."""
     data = {
-        "items": [
-            {"id": "1", "name": "First"},
-            {"id": "2", "name": "Second"},
+        "Call": {"status": "active", "message": "Do not call"},
+        "Email": {"status": "inactive"},
+    }
+    settings = DndSettings(**data)
+    assert settings.call is not None
+    assert settings.call.status == "active"
+    assert settings.email is not None
+    assert settings.email.status == "inactive"
+
+
+def test_contact_response() -> None:
+    """Test ContactResponse wrapper."""
+    data = {"contact": {"id": "abc123", "firstName": "John"}}
+    response = ContactResponse(**data)
+    assert response.contact.id == "abc123"
+
+
+def test_contact_list_response() -> None:
+    """Test ContactListResponse."""
+    data = {
+        "contacts": [
+            {"id": "1", "firstName": "Alice"},
+            {"id": "2", "firstName": "Bob"},
         ],
-        "pagination": {"nextCursor": "next", "hasMore": True},
+        "count": 2,
     }
-    response = ItemListResponse(**data)
-    assert len(response.items) == 2
-    assert response.items[0].id == "1"
-    assert response.pagination.has_more is True
+    response = ContactListResponse(**data)
+    assert len(response.contacts) == 2
+    assert response.count == 2
 
 
-def test_item_list_response_empty() -> None:
-    """Test ItemListResponse with empty results."""
-    response = ItemListResponse()
-    assert response.items == []
-    assert response.pagination.has_more is False
+def test_contact_list_response_empty() -> None:
+    """Test ContactListResponse with empty results."""
+    response = ContactListResponse()
+    assert response.contacts == []
+    assert response.count is None
+
+
+def test_upsert_response() -> None:
+    """Test UpsertContactResponse."""
+    data = {
+        "new": True,
+        "contact": {"id": "new123", "firstName": "New"},
+        "traceId": "trace-abc",
+    }
+    response = UpsertContactResponse(**data)
+    assert response.new is True
+    assert response.contact.id == "new123"
+    assert response.trace_id == "trace-abc"
+
+
+def test_update_response() -> None:
+    """Test UpdateContactResponse."""
+    data = {
+        "succeded": True,
+        "contact": {"id": "abc123", "firstName": "Updated"},
+    }
+    response = UpdateContactResponse(**data)
+    assert response.succeded is True
+
+
+def test_delete_response() -> None:
+    """Test DeleteContactResponse."""
+    data = {"succeded": True}
+    response = DeleteContactResponse(**data)
+    assert response.succeded is True

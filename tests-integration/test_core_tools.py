@@ -1,35 +1,22 @@
 """
 Core tools integration tests.
 
-Tests basic API functionality with real API calls.
-Replace with your actual endpoints and assertions.
+Tests basic API functionality with real GoHighLevel API calls.
+Requires GOHIGHLEVEL_API_KEY environment variable.
 """
 
 # import pytest
-# from mcp_example.api_client import ExampleAPIError, ExampleClient
+# from mcp_gohighlevel.api_client import GoHighLevelAPIError, GoHighLevelClient
 
 
 # TODO: Add integration tests for each tool group. Example:
 #
-# class TestListItems:
-#     """Test list items endpoint."""
+# class TestListContacts:
+#     """Test list contacts endpoint."""
 #
 #     @pytest.mark.asyncio
-#     async def test_list_items(self, client: ExampleClient):
-#         """Test listing items."""
-#         result = await client.list_items(limit=5)
-#         assert isinstance(result, list)
-#         print(f"Found {len(result)} items")
-#
-#
-# For tier-gated endpoints, add a helper:
-#
-# async def has_premium_access(client: ExampleClient) -> bool:
-#     """Check if the plan supports premium endpoints."""
-#     try:
-#         await client.premium_method()
-#         return True
-#     except ExampleAPIError as e:
-#         if e.status in (400, 401, 403):
-#             return False
-#         raise
+#     async def test_list_contacts(self, client: GoHighLevelClient):
+#         """Test listing contacts."""
+#         result = await client.list_contacts(location_id="your_location_id", limit=5)
+#         assert "contacts" in result
+#         print(f"Found {len(result['contacts'])} contacts")

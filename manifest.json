@@ -1,28 +1,28 @@
 {
   "manifest_version": "0.4",
-  "name": "@nimblebraininc/example",
+  "name": "@nimblebraininc/gohighlevel",
   "version": "0.1.0",
-  "description": "MCP server for the Example API",
+  "description": "MCP server for GoHighLevel CRM contact management",
   "author": {
     "name": "NimbleBrain Inc"
   },
   "user_config": {
     "api_key": {
       "type": "string",
-      "title": "Example API Key",
-      "description": "Your API key from https://example.com/settings/api",
+      "title": "GoHighLevel API Key",
+      "description": "Private Integration Token or OAuth Access Token",
       "sensitive": true,
       "required": true
     }
   },
   "server": {
     "type": "python",
-    "entry_point": "mcp_example.server",
+    "entry_point": "mcp_gohighlevel.server",
     "mcp_config": {
       "command": "python",
-      "args": ["-m", "mcp_example.server"],
+      "args": ["-m", "mcp_gohighlevel.server"],
       "env": {
-        "EXAMPLE_API_KEY": "${user_config.api_key}"
+        "GOHIGHLEVEL_API_KEY": "${user_config.api_key}"
       }
     }
   }
