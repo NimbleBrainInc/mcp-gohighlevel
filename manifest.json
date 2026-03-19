@@ -23,6 +23,13 @@
       "args": ["-m", "mcp_gohighlevel.server"],
       "env": {
         "GOHIGHLEVEL_API_KEY": "${user_config.api_key}"
+      },
+      "permissions": {
+        "filesystem": "none",
+        "network": "outbound",
+        "environment": "read",
+        "subprocess": "none",
+        "native": "none"
       }
     }
   }
