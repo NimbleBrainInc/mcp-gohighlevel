@@ -35,32 +35,44 @@ jobs:
 
       - name: Run MTF scanner
         run: |
-          set +e
-          uvx mpak-scanner scan *.mcpb --json > scan-results.json 2>scan-stderr.log
-          SCAN_EXIT=$?
-          echo "Scanner exit code: $SCAN_EXIT"
-          echo "--- stderr ---"
-          cat scan-stderr.log
-          echo "--- stdout (scan-results.json) ---"
-          cat scan-results.json
-          echo "---"
+          uvx mpak-scanner scan *.mcpb --json > scan-raw.json 2>scan-stderr.log || true
+          cat scan-stderr.log >&2
+          # Scanner prefixes "Scanning *.mcpb..." to stdout — extract JSON starting at first {
+          sed -n '/^{/,$p' scan-raw.json > scan-results.json
 
       - name: Check for critical/high findings
         run: |
-          python3 -c "
+          python3 << 'PYEOF'
           import json, sys, os
-          if not os.path.exists('scan-results.json') or os.path.getsize('scan-results.json') == 0:
-              print('WARN: scan-results.json is empty — scanner may not have produced JSON output')
-              print('Check scan-stderr.log for details')
+
+          if not os.path.exists("scan-results.json") or os.path.getsize("scan-results.json") == 0:
+              print("WARN: scan-results.json is empty — scanner may not have produced JSON output")
               sys.exit(1)
-          with open('scan-results.json') as f:
+
+          with open("scan-results.json") as f:
               results = json.load(f)
-          findings = results.get('findings', [])
-          critical_high = [f for f in findings if f.get('severity') in ('CRITICAL', 'HIGH')]
+
+          # Collect all findings from all domains/controls
+          all_findings = []
+          for domain in results.get("domains", {}).values():
+              for control in domain.get("controls", {}).values():
+                  all_findings.extend(control.get("findings", []))
+
+          critical_high = [f for f in all_findings if f.get("severity") in ("critical", "high")]
+
+          print(f"Compliance: {results.get('compliance', {}).get('level_name', 'unknown')}")
+          print(f"Risk score: {results.get('risk_score', 'unknown')}")
+          print(f"Controls: {results.get('compliance', {}).get('controls_passed', 0)} passed, "
+                f"{results.get('compliance', {}).get('controls_failed', 0)} failed")
+          print(f"Total findings: {len(all_findings)}")
+
           if critical_high:
-              print(f'FAIL: {len(critical_high)} critical/high findings')
+              print(f"\nFAIL: {len(critical_high)} critical/high findings:")
               for f in critical_high:
-                  print(f'  [{f[\"severity\"]}] {f.get(\"control\", \"\")} - {f.get(\"message\", \"\")}')
+                  print(f"  [{f['severity'].upper()}] {f.get('id', '')} - {f.get('title', '')}")
+                  if f.get("remediation"):
+                      print(f"    Fix: {f['remediation']}")
               sys.exit(1)
-          print(f'PASS: No critical/high findings ({len(findings)} total findings)')
-          "
+
+          print("\nPASS: No critical/high findings")
+          PYEOF
