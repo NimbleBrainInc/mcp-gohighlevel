@@ -40,6 +40,16 @@ mcp = FastMCP(
 _client: GoHighLevelClient | None = None
 
 
+def get_location_id(location_id: str | None = None) -> str:
+    """Resolve location ID from argument or GOHIGHLEVEL_LOCATION_ID env var."""
+    loc = location_id or os.environ.get("GOHIGHLEVEL_LOCATION_ID")
+    if not loc:
+        raise ValueError(
+            "location_id is required. Either pass it explicitly or set GOHIGHLEVEL_LOCATION_ID."
+        )
+    return loc
+
+
 async def get_client(ctx: Context | None = None) -> GoHighLevelClient:
     """Get or create the API client instance."""
     global _client
@@ -91,7 +101,7 @@ async def get_contact(
 
 @mcp.tool()
 async def create_contact(
-    location_id: str,
+    location_id: str | None = None,
     first_name: str | None = None,
     last_name: str | None = None,
     name: str | None = None,
@@ -115,7 +125,7 @@ async def create_contact(
     """Create a new contact in GoHighLevel.
 
     Args:
-        location_id: The location (sub-account) ID (required)
+        location_id: The location (sub-account) ID (defaults to GOHIGHLEVEL_LOCATION_ID env var)
         first_name: First name
         last_name: Last name
         name: Full name (alternative to first/last)
@@ -140,7 +150,8 @@ async def create_contact(
         The created contact
     """
     client = await get_client(ctx)
-    data: dict[str, Any] = {"locationId": location_id}
+    loc = get_location_id(location_id)
+    data: dict[str, Any] = {"locationId": loc}
 
     field_map = {
         "firstName": first_name,
@@ -289,7 +300,7 @@ async def delete_contact(
 
 @mcp.tool()
 async def upsert_contact(
-    location_id: str,
+    location_id: str | None = None,
     first_name: str | None = None,
     last_name: str | None = None,
     name: str | None = None,
@@ -316,7 +327,7 @@ async def upsert_contact(
     whether to match by email, phone, or both.
 
     Args:
-        location_id: The location (sub-account) ID (required)
+        location_id: The location (sub-account) ID (defaults to GOHIGHLEVEL_LOCATION_ID env var)
         first_name: First name
         last_name: Last name
         name: Full name
@@ -341,7 +352,8 @@ async def upsert_contact(
         The contact with a 'new' flag indicating if it was created or updated
     """
     client = await get_client(ctx)
-    data: dict[str, Any] = {"locationId": location_id}
+    loc = get_location_id(location_id)
+    data: dict[str, Any] = {"locationId": loc}
 
     field_map = {
         "firstName": first_name,
@@ -378,7 +390,7 @@ async def upsert_contact(
 
 @mcp.tool()
 async def list_contacts(
-    location_id: str,
+    location_id: str | None = None,
     query: str | None = None,
     limit: int = 20,
     start_after_id: str | None = None,
@@ -388,7 +400,7 @@ async def list_contacts(
     """List contacts for a location (deprecated — prefer search_contacts).
 
     Args:
-        location_id: The location (sub-account) ID
+        location_id: The location (sub-account) ID (defaults to GOHIGHLEVEL_LOCATION_ID env var)
         query: Optional search query
         limit: Maximum results (1-100, default 20)
         start_after_id: Cursor for pagination (contact ID)
@@ -399,9 +411,10 @@ async def list_contacts(
         List of contacts with count
     """
     client = await get_client(ctx)
+    loc = get_location_id(location_id)
     try:
         return await client.list_contacts(
-            location_id=location_id,
+            location_id=loc,
             query=query,
             limit=limit,
             start_after_id=start_after_id,
@@ -415,7 +428,7 @@ async def list_contacts(
 
 @mcp.tool()
 async def search_contacts(
-    location_id: str,
+    location_id: str | None = None,
     query: str | None = None,
     page: int = 1,
     page_limit: int = 20,
@@ -425,7 +438,7 @@ async def search_contacts(
     """Search contacts with advanced filters.
 
     Args:
-        location_id: The location (sub-account) ID
+        location_id: The location (sub-account) ID (defaults to GOHIGHLEVEL_LOCATION_ID env var)
         query: Free-text search query (searches name, email, phone, etc.)
         page: Page number (default 1)
         page_limit: Results per page (default 20)
@@ -436,7 +449,8 @@ async def search_contacts(
         Search results with contacts
     """
     client = await get_client(ctx)
-    data: dict[str, Any] = {"locationId": location_id, "page": page, "pageLimit": page_limit}
+    loc = get_location_id(location_id)
+    data: dict[str, Any] = {"locationId": loc, "page": page, "pageLimit": page_limit}
     if query:
         data["query"] = query
     if filters:

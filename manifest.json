@@ -13,6 +13,12 @@
       "description": "Private Integration Token or OAuth Access Token",
       "sensitive": true,
       "required": true
+    },
+    "location_id": {
+      "type": "string",
+      "title": "Location ID",
+      "description": "GoHighLevel sub-account/location ID (found in Settings > Business Profile or the URL)",
+      "required": true
     }
   },
   "server": {
@@ -22,7 +28,8 @@
       "command": "python",
       "args": ["-m", "mcp_gohighlevel.server"],
       "env": {
-        "GOHIGHLEVEL_API_KEY": "${user_config.api_key}"
+        "GOHIGHLEVEL_API_KEY": "${user_config.api_key}",
+        "GOHIGHLEVEL_LOCATION_ID": "${user_config.location_id}"
       }
     }
   },

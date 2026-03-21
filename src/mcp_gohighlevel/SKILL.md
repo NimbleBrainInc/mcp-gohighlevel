@@ -17,7 +17,7 @@
 - Use the `id` from `create_contact` or `upsert_contact` response for follow-up `get_contact` or `update_contact` calls
 - Use `contact.id` values from `list_contacts` or `search_contacts` results when calling `get_contact`, `update_contact`, or `delete_contact`
 - The `upsert_contact` response includes a `new` boolean — use it to determine if the contact was created or updated
-- All write operations require a `locationId` — get this from an existing contact or the user
+- `location_id` defaults to the configured `GOHIGHLEVEL_LOCATION_ID` env var — you usually don't need to pass it
 
 ## Important Notes
 
