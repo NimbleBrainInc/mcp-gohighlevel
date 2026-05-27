@@ -1,3 +1,10 @@
+> [!WARNING]
+> **This repository is archived and no longer maintained.**
+>
+> This MCP server has been removed from the [mpak registry](https://mpak.dev).
+
+---
+
 # GoHighLevel MCP Server
 
 An MCP (Model Context Protocol) server for managing contacts in GoHighLevel CRM. Supports full CRUD, upsert, list, and search operations.
